@@ -1,4 +1,6 @@
-﻿using Orleans;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Orleans;
 using Orleans.Configuration;
 using Orleans.Runtime;
 using System;
@@ -79,5 +81,15 @@ namespace Orleans.Storage
         }
 
         Task Close(CancellationToken ct) => Task.CompletedTask;
+    }
+
+
+    public class CompoundGrainStorageFactory
+    {
+        public static IGrainStorage Create(IServiceProvider services, string name)
+        {
+            IOptionsSnapshot<CompoundGrainStorageOptions> optionsSnapshot = services.GetRequiredService<IOptionsSnapshot<CompoundGrainStorageOptions>>();
+            return ActivatorUtilities.CreateInstance<CompoundGrainStorage>(services, name, optionsSnapshot.Get(name));
+        }
     }
 }
