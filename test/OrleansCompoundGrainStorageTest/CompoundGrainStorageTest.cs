@@ -15,19 +15,33 @@ namespace OrleansCompoundGrainStorage.Test
 {
     public class CompoundGrainStorageTest : IClassFixture<OrleansSiloFixture>
     {
-        IServiceProvider _serviceProvider;
         OrleansSiloFixture _fixture;
-
-        public CompoundGrainStorageTest(IServiceProvider serviceProvider, OrleansSiloFixture fixture)
+        public CompoundGrainStorageTest(OrleansSiloFixture fixture)
         {
-            _serviceProvider = serviceProvider;
             _fixture = fixture;
         }
 
         [Fact]
-        public void ReadStateAsync_AddToStorageReadFromCache_ReturnsCorrectValue()
+        public async Task ReadStateAsync_AddToStorageReadFromCache_ReturnsCorrectValue()
         {
+            int id = 0;
+            var storageGrain = _fixture.Cluster.GrainFactory.GetGrain<IStorageGrain<SimpleState>>(id);
+
+            var state = await storageGrain.GetState();
+            state.State = "some state";
+            await storageGrain.SetState(state);
             
+            // var compoundGrain = _fixture.Cluster.GrainFactory.GetGrain<ICompoundGrain<SimpleState>>(id);
+
+            // var compoundState = await compoundGrain.GetState();
+
+            // Assert.Equal(state.State, compoundState.State);
+
+            var secondStorageGrain = _fixture.Cluster.GrainFactory.GetGrain<IStorageGrain<SimpleState>>(id);
+
+            var secondState = await secondStorageGrain.GetState();
+
+            Assert.Equal(state.State, secondState.State);
         }
     }
 
@@ -61,10 +75,10 @@ namespace OrleansCompoundGrainStorage.Test
 
     public class TestSiloBuilderConfigurator : ISiloBuilderConfigurator
     {
-        public string CacheName => "Cache";
-        public string StorageName => "Storage";
+        public static string CacheName => "Cache";
+        public static string StorageName => "Storage";
 
-        public string CompoundName => "Compound";
+        public static string CompoundName => "Compound";
 
         public void Configure(ISiloHostBuilder hostBuilder)
         {
