@@ -12,4 +12,6 @@ public class StorageGrain : Grain<SimpleState>, IStorageGrain<SimpleState>
         State = state;
         return Task.CompletedTask;
     }
+
+    public Task SaveAsync() => WriteStateAsync();
 }

@@ -12,4 +12,6 @@ public class CompoundGrain : Grain<SimpleState>, ICompoundGrain<SimpleState>
         State = state;
         return Task.CompletedTask;
     }
+
+    public Task SaveAsync() => WriteStateAsync();
 }

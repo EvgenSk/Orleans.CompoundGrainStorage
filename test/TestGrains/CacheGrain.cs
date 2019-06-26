@@ -12,4 +12,6 @@ public class CacheGrain : Grain<SimpleState>, ICacheGrain<SimpleState>
         State = state;
         return Task.CompletedTask;
     }
+
+    public Task SaveAsync() => WriteStateAsync();
 }

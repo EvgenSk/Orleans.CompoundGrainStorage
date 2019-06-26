@@ -30,18 +30,15 @@ namespace OrleansCompoundGrainStorage.Test
             var state = await storageGrain.GetState();
             state.State = "some state";
             await storageGrain.SetState(state);
+            await storageGrain.SaveAsync();
             
-            // var compoundGrain = _fixture.Cluster.GrainFactory.GetGrain<ICompoundGrain<SimpleState>>(id);
+            var compoundGrain = _fixture.Cluster.GrainFactory.GetGrain<ICompoundGrain<SimpleState>>(id);
+            var compoundState = await compoundGrain.GetState();
+            Assert.Equal(state.State, compoundState.State);
 
-            // var compoundState = await compoundGrain.GetState();
-
-            // Assert.Equal(state.State, compoundState.State);
-
-            var secondStorageGrain = _fixture.Cluster.GrainFactory.GetGrain<IStorageGrain<SimpleState>>(id);
-
-            var secondState = await secondStorageGrain.GetState();
-
-            Assert.Equal(state.State, secondState.State);
+            // var secondStorageGrain = _fixture.Cluster.GrainFactory.GetGrain<IStorageGrain<SimpleState>>(id);
+            // var secondState = await secondStorageGrain.GetState();
+            // Assert.Equal(state.State, secondState.State);
         }
     }
 
