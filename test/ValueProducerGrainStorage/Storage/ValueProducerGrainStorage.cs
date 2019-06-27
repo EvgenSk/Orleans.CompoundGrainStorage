@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -11,6 +12,7 @@ namespace Orleans.Storage
     public class ValueProducerGrainStorage<T> : IGrainStorage, ILifecycleParticipant<ISiloLifecycle> where T: class
     {
         string Name { get; }
+        Dictionary<string, int> ReadsCount { get; } = new Dictionary<string, int>();
         
         ValueProducerGrainStorageOptions<T> Options { get; }
 
@@ -20,8 +22,16 @@ namespace Orleans.Storage
             Options = options;
         }
 
+        public int GetReadsCount(string key) => ReadsCount.TryGetValue(key, out var count) ? count : 0;
+        
         public Task ReadStateAsync(string grainType, GrainReference grainReference, IGrainState grainState)
         {
+            var keyString = grainReference.ToKeyString();
+            if(!ReadsCount.ContainsKey(keyString))
+                ReadsCount.Add(keyString, 0);
+
+            ReadsCount[keyString]++;
+
             grainState.State = Options.ProduceValue?.Invoke();
             return Task.CompletedTask;
         }
