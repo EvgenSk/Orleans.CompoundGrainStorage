@@ -11,25 +11,21 @@ using System.Text;
 
 namespace Orleans.Hosting
 {
-    public static class ValueProducerStorageBuilderExtensions
+    public static class GuidProducerStorageBuilderExtensions
     {
-        public static ISiloHostBuilder AddCompoundGrainStorageAsDefault<T>(this ISiloHostBuilder builder, Action<ValueProducerGrainStorageOptions<T>> configureOptions) where T : class
+        public static ISiloHostBuilder AddValueProducerGrainStorageAsDefault(this ISiloHostBuilder builder)
         {
-            return builder.AddCompoundGrainStorage(ProviderConstants.DEFAULT_STORAGE_PROVIDER_NAME, configureOptions);
+            return builder.AddGuidProducerGrainStorage(ProviderConstants.DEFAULT_STORAGE_PROVIDER_NAME);
         }
 
-        public static ISiloHostBuilder AddCompoundGrainStorage<T>(this ISiloHostBuilder builder, string name, Action<ValueProducerGrainStorageOptions<T>> configureOptions) where T : class
+        public static ISiloHostBuilder AddGuidProducerGrainStorage(this ISiloHostBuilder builder, string name)
         {
-            return builder.ConfigureServices(s => s.AddCompoundGrainStorage<T>(name, ob => ob.Configure(configureOptions)));
+            return builder.ConfigureServices(s => s.AddGuidProducerGrainStorage(name));
         }
 
-        internal static IServiceCollection AddCompoundGrainStorage<T>(this IServiceCollection services, string name, Action<OptionsBuilder<ValueProducerGrainStorageOptions<T>>> configureOptions = null) where T : class
+        internal static IServiceCollection AddGuidProducerGrainStorage(this IServiceCollection services, string name)
         {
-            configureOptions?.Invoke(services.AddOptions<ValueProducerGrainStorageOptions<T>>(name));
-
-            services.ConfigureNamedOptionForLogging<ValueProducerGrainStorageOptions<T>>(name);
-
-            services.AddSingletonNamedService(name, ValueProducerGrainStorageFactory<T>.Create);
+            services.AddSingletonNamedService(name, GuidProducerGrainStorageFactory.Create);
             services.AddSingletonNamedService(name, (s, n) => (ILifecycleParticipant<ISiloLifecycle>)s.GetRequiredServiceByName<IGrainStorage>(n));
             return services;
         }

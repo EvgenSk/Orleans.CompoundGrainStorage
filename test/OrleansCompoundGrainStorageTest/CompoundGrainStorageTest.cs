@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Threading.Tasks;
 using Orleans.Storage;
 using Orleans.Runtime;
+using TestGrains;
 
 namespace OrleansCompoundGrainStorage.Test
 {
@@ -22,23 +23,34 @@ namespace OrleansCompoundGrainStorage.Test
         }
 
         [Fact]
-        public async Task ReadStateAsync_AddToStorageReadFromCache_ReturnsCorrectValue()
+        public async Task ReadStateAsync_ReadFromCacheTwice_ProducedOnce()
         {
             int id = 0;
-            var storageGrain = _fixture.Cluster.GrainFactory.GetGrain<IStorageGrain<SimpleState>>(id);
+            var compoundGrain = _fixture.Cluster.GrainFactory.GetGrain<ITestGrain>(id);
 
-            var state = await storageGrain.GetState();
-            state.State = "some state";
-            await storageGrain.SetState(state);
-            await storageGrain.SaveAsync();
-            
-            var compoundGrain = _fixture.Cluster.GrainFactory.GetGrain<ICompoundGrain<SimpleState>>(id);
-            var compoundState = await compoundGrain.GetState();
-            Assert.Equal(state.State, compoundState.State);
+            var guid = await compoundGrain.GetState();
+            await compoundGrain.SaveAsync();
 
-            // var secondStorageGrain = _fixture.Cluster.GrainFactory.GetGrain<IStorageGrain<SimpleState>>(id);
-            // var secondState = await secondStorageGrain.GetState();
-            // Assert.Equal(state.State, secondState.State);
+            var secondGrain = _fixture.Cluster.GrainFactory.GetGrain<ITestGrain>(id);
+            var seconGuid = await secondGrain.GetState();
+
+            Assert.Equal(guid, seconGuid);
+        }
+
+        [Fact]
+        public async Task ReadStateAsync_ReadFromDifferentGrains_ProducedDifferentResults()
+        {
+            int id1 = 0;
+            var compoundGrain = _fixture.Cluster.GrainFactory.GetGrain<ITestGrain>(id1);
+
+            var guid = await compoundGrain.GetState();
+            await compoundGrain.SaveAsync();
+
+            int id2 = 1;
+            var secondGrain = _fixture.Cluster.GrainFactory.GetGrain<ITestGrain>(id2);
+            var seconGuid = await secondGrain.GetState();
+
+            Assert.NotEqual(guid, seconGuid);
         }
     }
 
@@ -73,7 +85,7 @@ namespace OrleansCompoundGrainStorage.Test
     public class TestSiloBuilderConfigurator : ISiloBuilderConfigurator
     {
         public static string CacheName => "Cache";
-        public static string StorageName => "Storage";
+        public static string StorageName => "Producer";
 
         public static string CompoundName => "Compound";
 
@@ -81,11 +93,15 @@ namespace OrleansCompoundGrainStorage.Test
         {
             hostBuilder
                 .AddMemoryGrainStorage(CacheName)
-                .AddMemoryGrainStorage(StorageName)
+                .AddGuidProducerGrainStorage(StorageName)
                 .AddCompoundGrainStorage(CompoundName, options => {
                     options.CacheName = CacheName;
                     options.StorageName = StorageName;
-                });
+                })
+                .ConfigureApplicationParts(
+                    parts => {
+                        parts.AddApplicationPart(typeof(TestGrain).Assembly).WithReferences();
+                    });
         }
     }
 }

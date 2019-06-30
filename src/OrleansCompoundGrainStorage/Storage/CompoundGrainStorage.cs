@@ -5,6 +5,7 @@ using Orleans.Configuration;
 using Orleans.Runtime;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,28 +45,29 @@ namespace Orleans.Storage
             try
             {
                 await Cache.ReadStateAsync(grainType, grainReference, grainState);
+                if (grainState.ETag == null)
+                {
+                    await Storage.ReadStateAsync(grainType, grainReference, grainState);
+
+                    if (!UpdateCache)
+                        return;
+
+                    await Cache.WriteStateAsync(grainType, grainReference, grainState);
+                }
             }
-            catch
+            catch (Exception ex)
             {
-                await Storage.ReadStateAsync(grainType, grainReference, grainState);
-
-                if (!UpdateCache)
-                    return;
-
-                var isReadOnly = IsReadOnly;
-                IsReadOnly = false;
-                await WriteStateAsync(grainType, grainReference, grainState);
-                IsReadOnly = isReadOnly;
+                Debug.WriteLine(ex.Message);
             }
         }
 
-        public Task WriteStateAsync(string grainType, GrainReference grainReference, IGrainState grainState)
-        {
-            if (IsReadOnly)
-                return Task.CompletedTask;
-
-            return Cache.WriteStateAsync(grainType, grainReference, grainState);
-        }
+        public Task WriteStateAsync(string grainType, GrainReference grainReference, IGrainState grainState) =>
+            IsReadOnly
+            ? Task.CompletedTask
+            : Task.WhenAll(
+                Cache.WriteStateAsync(grainType, grainReference, grainState),
+                Storage.WriteStateAsync(grainType, grainReference, grainState)
+                );
 
         public void Participate(ISiloLifecycle lifecycle)
         {
@@ -82,7 +84,6 @@ namespace Orleans.Storage
 
         Task Close(CancellationToken ct) => Task.CompletedTask;
     }
-
 
     public class CompoundGrainStorageFactory
     {

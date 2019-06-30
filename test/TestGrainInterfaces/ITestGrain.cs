@@ -1,8 +1,9 @@
+using Orleans;
+using System;
 using System.Threading.Tasks;
 
-public interface ITestGrain<T>
+public interface ITestGrain : IGrainWithIntegerKey
 {
-    Task<T> GetState();
-    Task SetState(T state);
+    Task<Guid> GetState();
     Task SaveAsync();
 }
