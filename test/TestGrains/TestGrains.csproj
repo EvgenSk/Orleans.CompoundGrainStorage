@@ -1,6 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\TestGrainInterfaces\TestGrainInterfaces.csproj" />
   </ItemGroup>
   <ItemGroup>
