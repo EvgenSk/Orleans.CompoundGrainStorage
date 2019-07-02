@@ -21,7 +21,6 @@ namespace Orleans.Storage
         IGrainStorage Cache { get; set; }
         IGrainStorage Storage { get; set; }
 
-        bool IsReadOnly { get; set; }
         public bool UpdateCache { get; }
 
         public CompoundGrainStorage(string name, CompoundGrainStorageOptions options, IServiceProvider serviceProvider)
@@ -29,9 +28,7 @@ namespace Orleans.Storage
             Name = name;
             Options = options;
 
-            IsReadOnly = Options.ReadOnly;
             UpdateCache = Options.UpdateCache;
-
             ServiceProvider = serviceProvider;
         }
         public Task ClearStateAsync(string grainType, GrainReference grainReference, IGrainState grainState) =>
@@ -62,9 +59,7 @@ namespace Orleans.Storage
         }
 
         public Task WriteStateAsync(string grainType, GrainReference grainReference, IGrainState grainState) =>
-            IsReadOnly
-            ? Task.CompletedTask
-            : Task.WhenAll(
+            Task.WhenAll(
                 Cache.WriteStateAsync(grainType, grainReference, grainState),
                 Storage.WriteStateAsync(grainType, grainReference, grainState)
                 );
