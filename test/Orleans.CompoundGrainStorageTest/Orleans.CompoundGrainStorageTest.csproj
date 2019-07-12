@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\OrleansCompoundGrainStorage\OrleansCompoundGrainStorage.csproj" />
+    <ProjectReference Include="..\..\src\Orleans.CompoundGrainStorage\Orleans.CompoundGrainStorage.csproj" />
     <ProjectReference Include="..\TestGrains\TestGrains.csproj" />
     <ProjectReference Include="..\TestGrainInterfaces\TestGrainInterfaces.csproj" />
     <ProjectReference Include="..\ValueProducerGrainStorage\ValueProducerGrainStorage.csproj" />
