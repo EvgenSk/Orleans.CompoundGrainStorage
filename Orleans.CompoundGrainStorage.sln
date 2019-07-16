@@ -9,7 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{A13EA326-7
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orleans.CompoundGrainStorage", "src\Orleans.CompoundGrainStorage\Orleans.CompoundGrainStorage.csproj", "{0E8E8EEF-D56E-421F-B7DD-C80249D8D361}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orleans.CompoundGrainStorageTest", "test\Orleans.CompoundGrainStorageTest\Orleans.CompoundGrainStorageTest.csproj", "{73EE26A1-967C-4E11-9120-D9883645EF63}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orleans.CompoundGrainStorage.Tests", "test\Orleans.CompoundGrainStorage.Tests\Orleans.CompoundGrainStorage.Tests.csproj", "{73EE26A1-967C-4E11-9120-D9883645EF63}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestGrains", "test\TestGrains\TestGrains.csproj", "{757DBACB-11EF-4D7B-A436-A471DC876103}"
 EndProject
