@@ -1,0 +1,59 @@
+pool:
+  vmImage: 'ubuntu-16.04'
+
+variables:
+  buildConfiguration: 'Release'
+  dotnetSdkVersion: '2.2.301'
+  major: '0'
+  minor: '1'
+  patch: '0'  
+
+steps:
+- task: DotNetCoreInstaller@0
+  displayName: 'Use .NET Core SDK $(dotnetSdkVersion)'
+  inputs:
+    version: '$(dotnetSdkVersion)'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Restore project dependencies'
+  inputs:
+    command: restore
+    projects: '**/*.csproj'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Build the project - $(buildConfiguration)'
+  inputs:
+    command: build
+    projects: '**/*.csproj'
+    arguments: '--no-restore --configuration $(buildConfiguration)'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Run unit tests - $(buildConfiguration)'
+  inputs:
+    command: 'test'
+    arguments: '--no-build --configuration $(buildConfiguration)'
+    publishTestResults: true
+    projects: '**/*.Tests.csproj'
+    
+- task: WhiteSource Bolt@19
+  displayName: 'Run WhiteSource Bolt'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Pack the project - $(buildConfiguration)'
+  inputs:
+    command: 'pack'
+    packagesToPack: '**/*.csproj'
+    nobuild: true
+    arguments: '--configuration $(buildConfiguration)'
+    versioningScheme: byPrereleaseNumber
+    majorVersion: '$(major)'
+    minorVersion: '$(minor)'
+    patchVersion: '$(patch)'
+
+- task: NuGetCommand@2
+  displayName: 'Publish NuGet package'
+  inputs:
+    command: 'push'
+    publishVstsFeed: 'Orleans.CompoundGrainStorage'
+    allowPackageConflicts: true
+  condition: succeeded()
