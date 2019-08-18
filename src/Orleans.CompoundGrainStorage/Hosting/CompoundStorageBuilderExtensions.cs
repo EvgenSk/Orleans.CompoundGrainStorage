@@ -13,6 +13,7 @@ namespace Orleans.Hosting
 {
     public static class CompoundStorageBuilderExtensions
     {
+        private static readonly Action<CompoundGrainStorageOptions> dummy = (_) => { };
         public static ISiloHostBuilder AddCompoundGrainStorageAsDefault(this ISiloHostBuilder builder, Action<CompoundGrainStorageOptions> configureOptions)
         {
             return builder.AddCompoundGrainStorage(ProviderConstants.DEFAULT_STORAGE_PROVIDER_NAME, configureOptions);
@@ -20,7 +21,7 @@ namespace Orleans.Hosting
 
         public static ISiloHostBuilder AddCompoundGrainStorage(this ISiloHostBuilder builder, string name, Action<CompoundGrainStorageOptions> configureOptions)
         {
-            return builder.ConfigureServices(s => s.AddCompoundGrainStorage(name, ob => ob.Configure(configureOptions)));
+            return builder.ConfigureServices(s => s.AddCompoundGrainStorage(name, ob => ob.Configure(configureOptions ?? dummy)));
         }
 
         internal static IServiceCollection AddCompoundGrainStorage(this IServiceCollection services, string name, Action<OptionsBuilder<CompoundGrainStorageOptions>> configureOptions = null)
